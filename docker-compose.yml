@@ -1,11 +1,16 @@
 services:
   php:
-    image: php:8.2-fpm
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
     container_name: my-php-app-php
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
       - ./.docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - mysql
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
@@ -18,3 +23,33 @@ services:
     depends_on:
       - php
     restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: my-php-app-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data_fresh:/var/lib/mysql
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: my-php-app-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+volumes:
+  db_data_fresh:
