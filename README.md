@@ -137,3 +137,38 @@ Custom PHP settings live in `.docker/php.ini` and are mounted into the container
 | `max_execution_time`    | 60s    |
 
 Edit `.docker/php.ini` and restart the `php` container to apply changes:
+
+```bash
+docker compose restart php
+```
+
+---
+
+## Troubleshooting
+
+### Port already in use
+
+If you see `bind: address already in use`, another process is using one of the mapped ports. Check which ports are taken:
+
+```bash
+sudo ss -tulpn | grep -E '8080|8081|3307'
+```
+
+Then either stop the conflicting process or update the host-side port in `docker-compose.yml` (e.g. change `"8080:80"` to `"8090:80"`).
+
+### MySQL fails to start (corrupt data volume)
+
+If MySQL logs show `Cannot create redo log files` or `data files are corrupt`, the data volume is stale. Remove it and restart:
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+### Permission issues on `src/`
+
+If Nginx or PHP can't read files in `src/`, ensure the files are world-readable:
+
+```bash
+chmod -R 755 src/
+```

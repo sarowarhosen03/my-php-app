@@ -35,7 +35,7 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - db_data_fresh:/var/lib/mysql
+      - ./db_data_fresh:/var/lib/mysql
     restart: unless-stopped
 
   phpmyadmin:
